@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EPG Viewer</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>EPG Viewer</h1>
+      <div class="controls">
+        <button id="settingsBtn">Settings</button>
+      </div>
+    </header>
+    <div id="loadingBar" class="loading-bar"></div>
+    <main>
+      <section id="dashboard">
+        <aside>
+        <input id="search" type="text" placeholder="Search channels..." />
+        <ul id="channelList"></ul>
+        </aside>
+        <section id="content">
+          <div id="channelHeader"></div>
+          <div id="timelineBar"></div>
+          <div id="epg"></div>
+        </section>
+      </section>
+      <section id="settings" class="hidden">
+        <div class="settings-wrap">
+          <h2>Settings</h2>
+          <div class="form-row">
+            <label for="settingsPlaylist">Playlist URL</label>
+            <input id="settingsPlaylist" type="text" />
+          </div>
+          <div class="form-row">
+            <label>Detected EPG URL</label>
+            <div id="settingsEpgUrl" class="mono muted"></div>
+          </div>
+          <h3>Export URLs</h3>
+          <div class="grid-3">
+            <div class="form-row">
+              <label for="settingsHost">Host (for IPTV apps)</label>
+              <input id="settingsHost" type="text" />
+              <div class="hint muted">Use your LAN IP instead of localhost.</div>
+            </div>
+            <div class="form-row">
+              <label for="pastDays">Past days</label>
+              <input id="pastDays" type="number" min="0" max="30" value="7" />
+            </div>
+            <div class="form-row">
+              <label for="futureDays">Future days</label>
+              <input id="futureDays" type="number" min="0" max="30" value="3" />
+            </div>
+          </div>
+          <div class="form-row">
+            <label>GZ URL</label>
+            <div class="copy-row">
+              <input id="exportGzUrl" type="text" class="mono" readonly />
+              <button id="copyGz">Copy</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>XML URL</label>
+            <div class="copy-row">
+              <input id="exportXmlUrl" type="text" class="mono" readonly />
+              <button id="copyXml">Copy</button>
+            </div>
+          </div>
+          <div class="buttons">
+            <button id="applySettings" class="primary">Apply & Load</button>
+            <button id="closeSettings">Close</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="/app.js" type="module"></script>
+  </body>
+  </html>
