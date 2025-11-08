@@ -1265,7 +1265,9 @@ app.post('/api/export/prewarm', async (req, res) => {
       try {
         const out = await prewarmExportJob({ pastDays, futureDays, playlistUrl, epgUrl, full, key: tempKey });
         const finalKey = out.cacheKey || out.key || tempKey;
-        prewarmJobs.delete(tempKey);
+        // Keep the temporary key alive so clients polling with tempKey still see 'done'
+        // Also expose the final signature key for direct access.
+        job.aliasKey = finalKey;
         prewarmJobs.set(finalKey, job);
       } catch (e) {
         job.status = 'error'; job.message = e.message || 'failed'; job.percent = 0;

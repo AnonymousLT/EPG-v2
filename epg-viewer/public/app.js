@@ -721,9 +721,11 @@ async function prewarmNow() {
         const sres = await fetch(`/api/export/status?key=${encodeURIComponent(key)}`);
         const stat = await sres.json();
         if (stat.status === 'done') {
-          prewarmStatus.textContent = 'Ready';
+          prewarmStatus.textContent = 'Complete';
           clearInterval(prewarmPoll);
           prewarmBtn.disabled = false;
+          // Clear the status after 15 seconds
+          setTimeout(() => { if (prewarmStatus.textContent === 'Complete') prewarmStatus.textContent = ''; }, 15000);
         } else if (stat.status === 'error') {
           prewarmStatus.textContent = `Error: ${stat.message || ''}`;
           clearInterval(prewarmPoll);
