@@ -166,3 +166,47 @@ Development
 License
 No license specified. Use at your discretion.
 
+
+Docker deployment
+
+Build and run with Docker:
+
+1) Build the image
+
+docker build -t epg-viewer:latest .
+
+2) Run the container
+
+docker run -d \
+  --name epg-viewer \
+  -p 3333:3333 \
+  -e NODE_ENV=production \
+  -e PORT=3333 \
+  -v $(pwd)/epg-viewer/epg-viewer/data:/app/epg-viewer/data \
+  epg-viewer:latest
+
+3) Open http://localhost:3333 and configure settings (playlist, etc.). Data persists in epg-viewer/epg-viewer/data.
+
+
+Using docker‑compose
+
+For repeatable deployments, use the provided docker-compose.yml:
+
+docker compose up -d --build
+
+This:
+- Builds the image
+- Maps port 3333
+- Mounts epg-viewer/epg-viewer/data for persistent settings, mirrors, and caches
+- Restarts the container unless stopped and adds a simple healthcheck
+
+Upgrade workflow
+- Pull latest Git changes
+- docker compose pull (if using a remote registry) or docker compose build
+- docker compose up -d
+
+Notes
+- The first run may take longer as mirrors/cache warm up.
+- On NAS/VMs, ensure the mounted data directory is writeable by the container user (node:node in the base image).
+- To reset caches without losing settings, stop the container and remove subfolders under data/cache.
+

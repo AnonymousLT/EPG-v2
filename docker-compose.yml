@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  epg-viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: epg-viewer:latest
+    container_name: epg-viewer
+    ports:
+      - "3333:3333"
+    environment:
+      - NODE_ENV=production
+      - PORT=3333
+    volumes:
+      - ./epg-viewer/epg-viewer/data:/app/epg-viewer/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3333/api/settings"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+

@@ -1,0 +1,13 @@
+**/node_modules
+**/npm-debug.log*
+**/yarn-error.log*
+.git
+.gitignore
+.DS_Store
+*.swp
+epg-viewer/epg-viewer/data/cache
+epg-viewer/epg-viewer/data/mirror/*.xmltv.gz
+epg-viewer/epg-viewer/data/mirror/*.xml
+epg-viewer/epg-viewer/data/source-cache
+epg-viewer/epg-viewer/data/settings.json
+
