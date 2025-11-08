@@ -24,15 +24,27 @@ export async function streamParseXmltv(epgUrlOrPath, allowedIds = null, opts = {
   if (/^https?:\/\//i.test(src)) {
     const res = await fetch(src, { headers: { 'User-Agent': 'epg-viewer/0.1' } });
     if (!res.ok) throw new Error(`Failed to fetch ${src}: ${res.status} ${res.statusText}`);
-    input = Readable.fromWeb(res.body);
     const contentType = res.headers.get('content-type') || '';
     const encoding = res.headers.get('content-encoding') || '';
     looksGz = encoding.includes('gzip') || contentType.includes('gzip') || src.endsWith('.gz');
+    // Robustly create a readable stream even if res.body is null
+    try {
+      if (res.body && typeof res.body.getReader === 'function') {
+        input = Readable.fromWeb(res.body);
+      } else {
+        const buf = Buffer.from(await res.arrayBuffer());
+        input = Readable.from([buf]);
+      }
+    } catch {
+      const buf = Buffer.from(await res.arrayBuffer());
+      input = Readable.from([buf]);
+    }
   } else {
     // treat as local file path
     looksGz = src.endsWith('.gz');
     input = fs.createReadStream(src);
   }
+  if (!input) throw new Error(`No input stream for ${src}`);
   input = looksGz ? input.pipe(zlib.createGunzip()) : input;
   if (input.setEncoding) input.setEncoding('utf8');
 

@@ -6,6 +6,9 @@ ENV NODE_ENV=production \
 
 WORKDIR /app
 
+# System deps for HTTPS and time zones (Luxon) and healthcheck wget
+RUN apk add --no-cache ca-certificates tzdata wget && update-ca-certificates
+
 # Only copy the epg-viewer app to keep context small
 COPY epg-viewer/package*.json ./epg-viewer/
 
@@ -21,4 +24,3 @@ RUN mkdir -p /app/epg-viewer/data
 EXPOSE 3333
 
 CMD ["npm", "start"]
-
