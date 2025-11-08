@@ -306,12 +306,14 @@ async function prewarmExportJob(params) {
 
   // Parse concurrently
   if (job) { job.message = 'Parsing sources'; job.percent = 25; }
-  const results = await Promise.all(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, full ? { noWindow: true } : { windowFromMs, windowToMs })));
+  const parsedResults = await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, full ? { noWindow: true } : { windowFromMs, windowToMs })));
   if (job) { job.message = 'Merging'; job.percent = 70; }
   // Merge with offsets
   const schedules = {}; const epgChMeta = new Map();
-  for (let i=0;i<results.length;i++){
-    const g = groupArr[i]; const { channels: chMap, schedules: raw } = results[i];
+  for (let i=0;i<parsedResults.length;i++){
+    const g = groupArr[i];
+    if (parsedResults[i].status !== 'fulfilled') { continue; }
+    const { channels: chMap, schedules: raw } = parsedResults[i].value;
     for (const [id, meta] of chMap.entries()) epgChMeta.set(id, meta);
     if (g.allowed) {
       for (const [epgId, list] of Object.entries(raw)) {
@@ -965,10 +967,11 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
       const meta = cached.epgMeta || {};
       for (const id of Object.keys(meta)) epgChMeta.set(id, meta[id]);
     } else {
-      const results = await Promise.all(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, isFull ? { noWindow: true } : { windowFromMs, windowToMs })));
-      for (let i=0;i<results.length;i++){
+  const parsedResults = await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, isFull ? { noWindow: true } : { windowFromMs, windowToMs })));
+      for (let i=0;i<parsedResults.length;i++){
         const g = groupArr[i];
-        const { channels: chMap, schedules: raw } = results[i];
+        if (parsedResults[i].status !== 'fulfilled') { continue; }
+        const { channels: chMap, schedules: raw } = parsedResults[i].value;
         for (const [id, meta] of chMap.entries()) epgChMeta.set(id, meta);
         if (g.allowed) {
           for (const [epgId, list] of Object.entries(raw)) {
@@ -1162,10 +1165,11 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
       const meta = cached.epgMeta || {};
       for (const id of Object.keys(meta)) epgChMeta.set(id, meta[id]);
     } else {
-      const results = await Promise.all(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, { windowFromMs, windowToMs })));
-      for (let i=0;i<results.length;i++){
+      const parsedResults = await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, { windowFromMs, windowToMs })));
+      for (let i=0;i<parsedResults.length;i++){
         const g = groupArr[i];
-        const { channels: chMap, schedules: raw } = results[i];
+        if (parsedResults[i].status !== 'fulfilled') { continue; }
+        const { channels: chMap, schedules: raw } = parsedResults[i].value;
         for (const [id, meta] of chMap.entries()) epgChMeta.set(id, meta);
         if (g.allowed) {
           for (const [epgId, list] of Object.entries(raw)) {
