@@ -1,0 +1,450 @@
+{
+  "scannedAt": "2025-11-08T11:09:48.012Z",
+  "channels": [
+    {
+      "id": "1+2.lt",
+      "name": "1+2",
+      "icon": null
+    },
+    {
+      "id": "2TV.lt",
+      "name": "2TV",
+      "icon": null
+    },
+    {
+      "id": "AMC.lt",
+      "name": "AMC",
+      "icon": null
+    },
+    {
+      "id": "Animal.Planet.lt",
+      "name": "Animal Planet",
+      "icon": null
+    },
+    {
+      "id": "BBC.News.lt",
+      "name": "BBC News",
+      "icon": null
+    },
+    {
+      "id": "BTV.lt",
+      "name": "BTV",
+      "icon": null
+    },
+    {
+      "id": "Balticum.Auksinis.lt",
+      "name": "Balticum Auksinis",
+      "icon": null
+    },
+    {
+      "id": "Balticum.TV.lt",
+      "name": "Balticum TV",
+      "icon": null
+    },
+    {
+      "id": "Blue.Hustler.lt",
+      "name": "Blue Hustler",
+      "icon": null
+    },
+    {
+      "id": "Bolt.lt",
+      "name": "Bolt",
+      "icon": null
+    },
+    {
+      "id": "CNN.lt",
+      "name": "CNN",
+      "icon": null
+    },
+    {
+      "id": "Cartoon.Network.lt",
+      "name": "Cartoon Network",
+      "icon": null
+    },
+    {
+      "id": "Courtside.1891.TV.lt",
+      "name": "Courtside 1891 TV",
+      "icon": null
+    },
+    {
+      "id": "Delfi.TV.lt",
+      "name": "Delfi TV",
+      "icon": null
+    },
+    {
+      "id": "Discovery.lt",
+      "name": "Discovery",
+      "icon": null
+    },
+    {
+      "id": "DocuBox.lt",
+      "name": "DocuBox",
+      "icon": null
+    },
+    {
+      "id": "Duo.3.lt",
+      "name": "Duo 3",
+      "icon": null
+    },
+    {
+      "id": "Duo.5.lt",
+      "name": "Duo 5",
+      "icon": null
+    },
+    {
+      "id": "Duo.6.lt",
+      "name": "Duo 6",
+      "icon": null
+    },
+    {
+      "id": "Epic.Drama.lt",
+      "name": "Epic Drama",
+      "icon": null
+    },
+    {
+      "id": "Euronews.lt",
+      "name": "Euronews",
+      "icon": null
+    },
+    {
+      "id": "Eurosport.1.lt",
+      "name": "Eurosport 1",
+      "icon": null
+    },
+    {
+      "id": "Eurosport.2.lt",
+      "name": "Eurosport 2",
+      "icon": null
+    },
+    {
+      "id": "FX.Life.lt",
+      "name": "FX Life",
+      "icon": null
+    },
+    {
+      "id": "FX.lt",
+      "name": "FX",
+      "icon": null
+    },
+    {
+      "id": "Film.UA.Drama.lt",
+      "name": "Film UA Drama",
+      "icon": null
+    },
+    {
+      "id": "FilmBox.lt",
+      "name": "FilmBox",
+      "icon": null
+    },
+    {
+      "id": "Filmzone+.lt",
+      "name": "Filmzone+",
+      "icon": null
+    },
+    {
+      "id": "Filmzone.LT.lt",
+      "name": "Filmzone LT",
+      "icon": null
+    },
+    {
+      "id": "Food.Network.lt",
+      "name": "Food Network",
+      "icon": null
+    },
+    {
+      "id": "Freedom.lt",
+      "name": "Freedom",
+      "icon": null
+    },
+    {
+      "id": "Go3.Films.lt",
+      "name": "Go3 Films",
+      "icon": null
+    },
+    {
+      "id": "Go3.Sport.1.lt",
+      "name": "Go3 Sport 1",
+      "icon": null
+    },
+    {
+      "id": "Go3.Sport.2.lt",
+      "name": "Go3 Sport 2",
+      "icon": null
+    },
+    {
+      "id": "Go3.Sport.3.lt",
+      "name": "Go3 Sport 3",
+      "icon": null
+    },
+    {
+      "id": "Go3.Sport.4.lt",
+      "name": "Go3 Sport 4",
+      "icon": null
+    },
+    {
+      "id": "Go3.Sport.Open.lt",
+      "name": "Go3 Sport Open",
+      "icon": null
+    },
+    {
+      "id": "HGTV.lt",
+      "name": "HGTV",
+      "icon": null
+    },
+    {
+      "id": "History.Channel.HD.lt",
+      "name": "History Channel HD",
+      "icon": null
+    },
+    {
+      "id": "History2.lt",
+      "name": "History2",
+      "icon": null
+    },
+    {
+      "id": "Info.TV.lt",
+      "name": "Info TV",
+      "icon": null
+    },
+    {
+      "id": "Investigation.Discovery.lt",
+      "name": "Investigation Discovery",
+      "icon": null
+    },
+    {
+      "id": "Kanal.7.LT.lt",
+      "name": "Kanal 7 LT",
+      "icon": null
+    },
+    {
+      "id": "Kidzone.Max.lt",
+      "name": "Kidzone Max",
+      "icon": null
+    },
+    {
+      "id": "Kidzone.Mini.lt",
+      "name": "Kidzone Mini",
+      "icon": null
+    },
+    {
+      "id": "Kino.7.lt",
+      "name": "Kino 7",
+      "icon": null
+    },
+    {
+      "id": "LNK.lt",
+      "name": "LNK",
+      "icon": null
+    },
+    {
+      "id": "LRT.Plius.lt",
+      "name": "LRT Plius",
+      "icon": null
+    },
+    {
+      "id": "LRT.Televizija.lt",
+      "name": "LRT Televizija",
+      "icon": null
+    },
+    {
+      "id": "Lietuvos.rytas.TV.lt",
+      "name": "Lietuvos rytas TV",
+      "icon": null
+    },
+    {
+      "id": "MTV.'00s.lt",
+      "name": "MTV '00s",
+      "icon": null
+    },
+    {
+      "id": "MTV.Hits.lt",
+      "name": "MTV Hits",
+      "icon": null
+    },
+    {
+      "id": "My.Hits.lt",
+      "name": "My Hits",
+      "icon": null
+    },
+    {
+      "id": "NBA.lt",
+      "name": "NBA",
+      "icon": null
+    },
+    {
+      "id": "National.Geographic.Wild.lt",
+      "name": "National Geographic Wild",
+      "icon": null
+    },
+    {
+      "id": "National.Geographic.lt",
+      "name": "National Geographic",
+      "icon": null
+    },
+    {
+      "id": "Nick.Junior.lt",
+      "name": "Nick Junior",
+      "icon": null
+    },
+    {
+      "id": "Nickelodeon.lt",
+      "name": "Nickelodeon",
+      "icon": null
+    },
+    {
+      "id": "Nicktoons.lt",
+      "name": "Nicktoons",
+      "icon": null
+    },
+    {
+      "id": "OTV.lt",
+      "name": "OTV",
+      "icon": null
+    },
+    {
+      "id": "PWR.GOLD.lt",
+      "name": "PWR GOLD",
+      "icon": null
+    },
+    {
+      "id": "Playboy.lt",
+      "name": "Playboy",
+      "icon": null
+    },
+    {
+      "id": "Power.Hit.Radio.lt",
+      "name": "Power Hit Radio",
+      "icon": null
+    },
+    {
+      "id": "Prime.Fight.lt",
+      "name": "Prime Fight",
+      "icon": null
+    },
+    {
+      "id": "RADA.TV.lt",
+      "name": "RADA TV",
+      "icon": null
+    },
+    {
+      "id": "Setanta.LT.lt",
+      "name": "Setanta LT",
+      "icon": null
+    },
+    {
+      "id": "Sport.1.lt",
+      "name": "Sport 1",
+      "icon": null
+    },
+    {
+      "id": "Star.Family.lt",
+      "name": "Star Family",
+      "icon": null
+    },
+    {
+      "id": "Super+.lt",
+      "name": "Super+",
+      "icon": null
+    },
+    {
+      "id": "Super.Baltic.lt",
+      "name": "Super Baltic",
+      "icon": null
+    },
+    {
+      "id": "TLC.lt",
+      "name": "TLC",
+      "icon": null
+    },
+    {
+      "id": "TV.Extra.lt",
+      "name": "TV Extra",
+      "icon": null
+    },
+    {
+      "id": "TV1.lt",
+      "name": "TV1",
+      "icon": null
+    },
+    {
+      "id": "TV3.LT.lt",
+      "name": "TV3 LT",
+      "icon": null
+    },
+    {
+      "id": "TV3.Life.(DAI-FTA).lt",
+      "name": "TV3 Life (DAI-FTA)",
+      "icon": null
+    },
+    {
+      "id": "TV3.Plus.lt",
+      "name": "TV3 Plus",
+      "icon": null
+    },
+    {
+      "id": "TV6.DAI.TEST.lt",
+      "name": "TV6 DAI TEST",
+      "icon": null
+    },
+    {
+      "id": "TV6.LT.lt",
+      "name": "TV6 LT",
+      "icon": null
+    },
+    {
+      "id": "TV8.LT.lt",
+      "name": "TV8 LT",
+      "icon": null
+    },
+    {
+      "id": "Travel.Channel.lt",
+      "name": "Travel Channel",
+      "icon": null
+    },
+    {
+      "id": "Travelxp.lt",
+      "name": "Travelxp",
+      "icon": null
+    },
+    {
+      "id": "Viasat.Explore.lt",
+      "name": "Viasat Explore",
+      "icon": null
+    },
+    {
+      "id": "Viasat.History.lt",
+      "name": "Viasat History",
+      "icon": null
+    },
+    {
+      "id": "Viasat.Kino.Action.lt",
+      "name": "Viasat Kino Action",
+      "icon": null
+    },
+    {
+      "id": "Viasat.Kino.Comedy.lt",
+      "name": "Viasat Kino Comedy",
+      "icon": null
+    },
+    {
+      "id": "Viasat.Kino.World.lt",
+      "name": "Viasat Kino World",
+      "icon": null
+    },
+    {
+      "id": "Viasat.Kino.lt",
+      "name": "Viasat Kino",
+      "icon": null
+    },
+    {
+      "id": "Viasat.Nature.lt",
+      "name": "Viasat Nature",
+      "icon": null
+    },
+    {
+      "id": "Єдині.новини.lt",
+      "name": "Єдині новини",
+      "icon": null
+    }
+  ]
+}

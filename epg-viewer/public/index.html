@@ -8,7 +8,7 @@
   </head>
   <body>
     <header>
-      <h1>EPG Viewer</h1>
+      <h1 id="homeBtn" title="Back to EPG view">EPG Viewer</h1>
       <div class="controls">
         <button id="settingsBtn">Settings</button>
       </div>
@@ -17,7 +17,12 @@
     <main>
       <section id="dashboard">
         <aside>
-        <input id="search" type="text" placeholder="Search channels..." />
+        <div class="aside-controls">
+          <input id="search" type="text" placeholder="Search channels..." />
+          <select id="groupFilter">
+            <option value="">All groups</option>
+          </select>
+        </div>
         <ul id="channelList"></ul>
         </aside>
         <section id="content">
@@ -29,47 +34,111 @@
       <section id="settings" class="hidden">
         <div class="settings-wrap">
           <h2>Settings</h2>
-          <div class="form-row">
-            <label for="settingsPlaylist">Playlist URL</label>
-            <input id="settingsPlaylist" type="text" />
+          <div class="tabs" id="settingsTabs">
+            <button class="tab-btn" data-tab="general">General</button>
+            <button class="tab-btn" data-tab="export">Export</button>
+            <button class="tab-btn" data-tab="sources">Sources</button>
+            <button class="tab-btn" data-tab="mapping">Assignments</button>
           </div>
-          <div class="form-row">
-            <label>Detected EPG URL</label>
-            <div id="settingsEpgUrl" class="mono muted"></div>
-          </div>
-          <h3>Export URLs</h3>
-          <div class="grid-3">
-            <div class="form-row">
-              <label for="settingsHost">Host (for IPTV apps)</label>
-              <input id="settingsHost" type="text" />
-              <div class="hint muted">Use your LAN IP instead of localhost.</div>
+          <div class="card" id="card-general" data-tab-id="general">
+            <h3>General</h3>
+            <div class="desc">Set your playlist and default behavior. Toggle use of EPG from playlist headers.</div>
+            <div class="grid-2">
+              <div class="form-row">
+                <label for="settingsPlaylist">Playlist URL</label>
+                <input id="settingsPlaylist" type="text" />
+              </div>
+              <div class="form-row">
+                <label>Detected EPG URL</label>
+                <div id="settingsEpgUrl" class="mono muted"></div>
+              </div>
             </div>
             <div class="form-row">
-              <label for="pastDays">Past days</label>
-              <input id="pastDays" type="number" min="0" max="30" value="7" />
+              <label><input id="usePlaylistEpg" type="checkbox" checked /> Use EPG from playlist (url-tvg)</label>
+            </div>
+            <div class="grid-3">
+              <div class="form-row">
+                <label for="settingsHost">Host (for IPTV apps)</label>
+                <input id="settingsHost" type="text" />
+                <div class="hint muted">Use your LAN IP instead of localhost.</div>
+              </div>
+              <div class="form-row">
+                <label for="pastDays">Past days</label>
+                <input id="pastDays" type="number" min="0" max="30" value="7" />
+              </div>
+              <div class="form-row">
+                <label for="futureDays">Future days</label>
+                <input id="futureDays" type="number" min="0" max="30" value="3" />
+              </div>
+            </div>
+            <div class="buttons">
+              <button id="closeSettings">Close</button>
+            </div>
+          </div>
+
+          <div class="card" id="card-export" data-tab-id="export">
+            <h3>Export</h3>
+            <div class="desc">Share these URLs with IPTV apps. Use GZ for faster downloads.</div>
+            <div class="form-row">
+              <label>GZ URL</label>
+              <div class="copy-row">
+                <input id="exportGzUrl" type="text" class="mono" readonly />
+                <button id="copyGz">Copy</button>
+                <button id="openGz">Open</button>
+              </div>
             </div>
             <div class="form-row">
-              <label for="futureDays">Future days</label>
-              <input id="futureDays" type="number" min="0" max="30" value="3" />
+              <label>XML URL</label>
+              <div class="copy-row">
+                <input id="exportXmlUrl" type="text" class="mono" readonly />
+                <button id="copyXml">Copy</button>
+                <button id="openXml">Open</button>
+              </div>
+            </div>
+            <div class="form-row">
+              <label><input id="fullExport" type="checkbox" /> Full EPG (no day limits)</label>
+            </div>
+            <div class="form-row">
+              <label>Prewarm</label>
+              <div class="copy-row">
+                <button id="prewarmBtn">Prewarm Now</button>
+                <span id="prewarmStatus" class="mono muted"></span>
+              </div>
             </div>
           </div>
-          <div class="form-row">
-            <label>GZ URL</label>
-            <div class="copy-row">
-              <input id="exportGzUrl" type="text" class="mono" readonly />
-              <button id="copyGz">Copy</button>
+
+          <div class="card" id="card-sources" data-tab-id="sources">
+            <h3>EPG Sources</h3>
+            <div class="desc">Add additional EPG feeds. Rescan to refresh their channel lists for mapping.</div>
+            <div class="form-row">
+              <label for="newSourceUrl">Add Source URL</label>
+              <div class="copy-row">
+                <input id="newSourceUrl" type="text" placeholder="https://example.com/epg.xml.gz" />
+                <button id="addSourceBtn">Add</button>
+              </div>
+            </div>
+            <div id="sourcesList" class="sources"></div>
+            <div class="buttons">
+              <button id="refreshSources">Refresh Sources</button>
+              <button id="rescanAllSources">Rescan All</button>
             </div>
           </div>
-          <div class="form-row">
-            <label>XML URL</label>
-            <div class="copy-row">
-              <input id="exportXmlUrl" type="text" class="mono" readonly />
-              <button id="copyXml">Copy</button>
+
+          <div class="card" id="card-mapping" data-tab-id="mapping">
+            <h3>Channel Assignments</h3>
+            <div class="desc">Map playlist channels to EPG sources. Auto‑save applies immediately.</div>
+            <div class="form-row row-inline">
+              <input id="mapSearch" type="text" placeholder="Search channels to map..." />
+              <select id="mapGroup">
+                <option value="">All groups</option>
+              </select>
             </div>
-          </div>
-          <div class="buttons">
-            <button id="applySettings" class="primary">Apply & Load</button>
-            <button id="closeSettings">Close</button>
+            <div id="mappingBulk"></div>
+            <!-- Global datalist of IANA time zones for zone pickers -->
+            <datalist id="tzList"></datalist>
+            <!-- Global datalist of EPG sources (value = sourceId, label = host) -->
+            <datalist id="srcList"></datalist>
+            <div id="mappingList" class="mapping-list"></div>
           </div>
         </div>
       </section>

@@ -1,0 +1,494 @@
+{
+  "defaults": {
+    "playlistUrl": "http://248on.com/x/12aba339.m3u8",
+    "epgUrl": "http://epg.g-cdn.app/xmltv.xml.gz",
+    "usePlaylistEpg": true,
+    "pastDays": 7,
+    "futureDays": 3
+  },
+  "sources": [
+    {
+      "id": "src_6octsr",
+      "url": "https://epgshare01.online/epgshare01/epg_ripper_LT1.xml.gz",
+      "enabled": true,
+      "priority": 100,
+      "lastScanAt": "2025-11-08T11:09:48.012Z",
+      "channelCount": 89
+    },
+    {
+      "id": "src_65o2u5",
+      "url": "https://epgshare01.online/epgshare01/epg_ripper_UK1.xml.gz",
+      "enabled": false,
+      "priority": 100,
+      "lastScanAt": "2025-11-08T21:01:04.765Z",
+      "channelCount": 486
+    }
+  ],
+  "mappings": {
+    "tv3-film-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Go3.Films.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-sport-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Go3.Sport.1.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-sport2-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Go3.Sport.2.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-sport3-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Go3.Sport.3.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-sport-open-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Go3.Sport.Open.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "bbc1-uk-hd": {
+      "shiftMode": "wall"
+    },
+    "lnk-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "LNK.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "lrt-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "LRT.Televizija.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "lrt-plus-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "LRT.Plius.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv1-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "TV1.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "TV3.LT.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "3plus-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "TV3.Plus.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv6-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "TV6.LT.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv8-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "TV8.LT.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "delfi-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Delfi.TV.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "info-tv-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Info.TV.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "btv-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "BTV.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "lietuvos-rytas-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Lietuvos.rytas.TV.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "balticum-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Balticum.TV.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "balticum-auksinis-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Balticum.Auksinis.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "balticum-platinum-lt-hd": {
+      "shiftMode": "wall"
+    },
+    "siauliu-televizija-hd-lt": {
+      "shiftMode": "wall"
+    },
+    "sport1-hd-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Sport.1.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kidzone-lt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Kidzone.Max.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "ltv1-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "ltv3-hd-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "ltv3-life-hd-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "3-plus-hd-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv4-latvija-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "ltv6-hd-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "ltv7-hd-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "360tv-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv24-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kino7-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kanal7-baltic-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "stv-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "re-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "viasat-kino-lt-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "viasat-kino-action-lt-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "viasat-kino-comedy-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "best4sport-hd-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "best4sport2-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "discovery-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "viasat-nature-lt-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "viasat-history-lt-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "viasat-explore-lt-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tlc-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kidzone-lv-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-mini-hd-lv": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "etv-hd-ee": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "etv-plus-hd-ee": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "etv2-hd-ee": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kanal2-hd-ee": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv3-life-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "tv6-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "duo-one-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "duo3-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "duo4-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "duo5-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kanal7-baltic-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "eesti-kanal-ee": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "fox-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kidzone-ee-hd": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "filmzone-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Filmzone.LT.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "filmzone-plus-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Filmzone+.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "nickelodeon-balt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Nickelodeon.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "nick-jr-balt": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Nick.Junior.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "nicktoons-balt": {
+      "sourceId": "src_6octsr",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "kidzone-mini-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Kidzone.Mini.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "epic-drama-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Epic.Drama.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "duo3-lv-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Duo.3.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "duo5-lt-lv-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Duo.5.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    },
+    "duo6-lt-hd": {
+      "sourceId": "src_6octsr",
+      "epgChannelId": "Duo.6.lt",
+      "offsetMinutes": 60,
+      "zoneId": "Europe/Vilnius",
+      "shiftMode": "wall"
+    }
+  }
+}

@@ -1,11 +1,12 @@
 import { Readable } from 'node:stream';
+import fs from 'node:fs';
 import zlib from 'node:zlib';
 import sax from 'sax';
 import { xmltvTimeToIso } from './xmltv.js';
 
 // Stream-parse a potentially huge XMLTV file and filter to allowed channel IDs.
 // Returns { channels: Map(id->{name,icon}), schedules: {id: [programmes]}, totalProgrammes }
-export async function streamParseXmltv(epgUrl, allowedIds = null, opts = {}) {
+export async function streamParseXmltv(epgUrlOrPath, allowedIds = null, opts = {}) {
   const norm = (s) => (s == null ? '' : String(s).trim().toLowerCase());
   const keepAll = !allowedIds || allowedIds.size === 0;
   const allowedNorm = keepAll ? null : new Set(Array.from(allowedIds).map(norm));
@@ -15,18 +16,25 @@ export async function streamParseXmltv(epgUrl, allowedIds = null, opts = {}) {
   const defaultTo = Date.now() + 3 * DAY;
   const windowFromMs = Number.isFinite(opts.windowFromMs) ? opts.windowFromMs : defaultFrom;
   const windowToMs = Number.isFinite(opts.windowToMs) ? opts.windowToMs : defaultTo;
+  const noWindow = !!opts.noWindow;
 
-  const res = await fetch(epgUrl, { headers: { 'User-Agent': 'epg-viewer/0.1' } });
-  if (!res.ok) throw new Error(`Failed to fetch ${epgUrl}: ${res.status} ${res.statusText}`);
-
-  let input = Readable.fromWeb(res.body);
-  const contentType = res.headers.get('content-type') || '';
-  const encoding = res.headers.get('content-encoding') || '';
-  const looksGz = encoding.includes('gzip') || contentType.includes('gzip') || epgUrl.endsWith('.gz');
-  if (looksGz) {
-    input = input.pipe(zlib.createGunzip());
+  let input;
+  let looksGz = false;
+  const src = String(epgUrlOrPath || '');
+  if (/^https?:\/\//i.test(src)) {
+    const res = await fetch(src, { headers: { 'User-Agent': 'epg-viewer/0.1' } });
+    if (!res.ok) throw new Error(`Failed to fetch ${src}: ${res.status} ${res.statusText}`);
+    input = Readable.fromWeb(res.body);
+    const contentType = res.headers.get('content-type') || '';
+    const encoding = res.headers.get('content-encoding') || '';
+    looksGz = encoding.includes('gzip') || contentType.includes('gzip') || src.endsWith('.gz');
+  } else {
+    // treat as local file path
+    looksGz = src.endsWith('.gz');
+    input = fs.createReadStream(src);
   }
-  input.setEncoding('utf8');
+  input = looksGz ? input.pipe(zlib.createGunzip()) : input;
+  if (input.setEncoding) input.setEncoding('utf8');
 
   const channels = new Map();
   const schedules = {}; // id -> [{start, stop, title, desc, category, icon}]
@@ -43,20 +51,24 @@ export async function streamParseXmltv(epgUrl, allowedIds = null, opts = {}) {
   function pushProgramme(p) {
     totalProgrammes++;
     if (!p.include) return;
-    // Time-window filter: include only if overlaps [windowFromMs, windowToMs)
+    // Time-window filter: include only if overlaps [windowFromMs, windowToMs), unless noWindow
     const startIso = xmltvTimeToIso(p.start);
     const stopIso = xmltvTimeToIso(p.stop);
-    const startMs = startIso ? Date.parse(startIso) : NaN;
-    const stopMs = stopIso ? Date.parse(stopIso) : NaN;
-    const overlaps = (
-      (Number.isFinite(startMs) && startMs < windowToMs && (!Number.isFinite(stopMs) || stopMs > windowFromMs)) ||
-      (Number.isFinite(stopMs) && stopMs > windowFromMs && (!Number.isFinite(startMs) || startMs < windowToMs))
-    );
-    if (!overlaps) return;
+    if (!noWindow) {
+      const startMs = startIso ? Date.parse(startIso) : NaN;
+      const stopMs = stopIso ? Date.parse(stopIso) : NaN;
+      const overlaps = (
+        (Number.isFinite(startMs) && startMs < windowToMs && (!Number.isFinite(stopMs) || stopMs > windowFromMs)) ||
+        (Number.isFinite(stopMs) && stopMs > windowFromMs && (!Number.isFinite(startMs) || startMs < windowToMs))
+      );
+      if (!overlaps) return;
+    }
     if (!schedules[p.channel]) schedules[p.channel] = [];
     schedules[p.channel].push({
       start: startIso,
       stop: stopIso,
+      startXmltv: p.start || null,
+      stopXmltv: p.stop || null,
       title: p.title || null,
       desc: p.desc || null,
       category: p.category || null,
