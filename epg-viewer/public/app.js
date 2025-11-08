@@ -17,6 +17,8 @@ const copyXmlBtn = document.getElementById('copyXml');
 const openGzBtn = document.getElementById('openGz');
 const openXmlBtn = document.getElementById('openXml');
 const fullExportChk = document.getElementById('fullExport');
+const historyBackfillChk = document.getElementById('historyBackfill');
+const historyRetentionInput = document.getElementById('historyRetentionDays');
 const applySettingsBtn = document.getElementById('applySettings');
 const closeSettingsBtn = document.getElementById('closeSettings');
 const prewarmBtn = document.getElementById('prewarmBtn');
@@ -210,6 +212,8 @@ async function loadDefaultsIntoUI() {
     if (typeof d.usePlaylistEpg === 'boolean') usePlaylistEpg.checked = !!d.usePlaylistEpg;
     if (typeof d.pastDays === 'number') pastDaysInput.value = d.pastDays;
     if (typeof d.futureDays === 'number') futureDaysInput.value = d.futureDays;
+    if (typeof d.historyBackfill === 'boolean' && historyBackfillChk) historyBackfillChk.checked = !!d.historyBackfill;
+    if (typeof d.historyRetentionDays === 'number' && historyRetentionInput) historyRetentionInput.value = d.historyRetentionDays;
   } catch {}
   computeExportUrls();
 }
@@ -245,6 +249,11 @@ settingsHost.oninput = computeExportUrls;
 pastDaysInput.oninput = computeExportUrls;
 futureDaysInput.oninput = computeExportUrls;
 fullExportChk && (fullExportChk.onchange = computeExportUrls);
+historyBackfillChk && (historyBackfillChk.onchange = () => saveDefaults({ historyBackfill: !!historyBackfillChk.checked }));
+historyRetentionInput && (historyRetentionInput.onchange = () => {
+  const v = parseInt(historyRetentionInput.value || '21', 10) || 21;
+  saveDefaults({ historyRetentionDays: v });
+});
 copyGzBtn.onclick = () => { navigator.clipboard.writeText(exportGzUrlInput.value).catch(()=>{}); };
 copyXmlBtn.onclick = () => { navigator.clipboard.writeText(exportXmlUrlInput.value).catch(()=>{}); };
 openGzBtn && (openGzBtn.onclick = () => { const u=exportGzUrlInput.value; if (u) window.open(u, '_blank'); });

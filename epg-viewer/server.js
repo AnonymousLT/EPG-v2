@@ -5,7 +5,7 @@ import zlib from 'zlib';
 import { parsePlaylist } from './src/parseM3U.js';
 import { findEpgUrlInHeader, parseXmlTv, xmltvTimeToIso, isoToXmltvTime } from './src/xmltv.js';
 import { streamParseXmltv } from './src/streamXmltv.js';
-import { mirrorFetch } from './src/mirror.js';
+import { mirrorFetch, listSnapshots } from './src/mirror.js';
 import { getCache, setCache } from './src/cache.js';
 import { stableStringify, sha1hex } from './src/hash.js';
 import { DateTime } from 'luxon';
@@ -49,6 +49,56 @@ function normalizeXmltvOffsetZero(xmltv) {
   const m = /^(\d{14})(?:\s*(?:[+\-]\d{4}|Z))?$/.exec(xmltv);
   if (m) return `${m[1]} +0000`;
   return xmltv;
+}
+
+// Merge historical programmes from source mirror snapshots to backfill past days
+async function backfillFromHistory(groups, windowFromMs, windowToMs, schedules, mappings) {
+  const norm = (s) => (s == null ? '' : String(s).trim().toLowerCase());
+  const now = Date.now();
+  const pastTo = Math.min(windowToMs, now);
+  if (!(Number.isFinite(windowFromMs) && windowFromMs < pastTo)) return;
+  // Build de-dup sets for existing items per channel
+  const existingKeys = new Map(); // id -> Set(start)
+  for (const id of Object.keys(schedules)) {
+    const set = new Set();
+    for (const p of schedules[id]) if (p.start) set.add(p.start);
+    existingKeys.set(id, set);
+  }
+  for (const g of groups) {
+    const snaps = listSnapshots(g.url);
+    for (const s of snaps) {
+      // parse with window limited to past segment only
+      try {
+        const { schedules: raw } = await streamParseXmltv(s.path, g.allowed || null, { windowFromMs, windowToMs: pastTo });
+        if (g.allowed) {
+          for (const [epgId, list] of Object.entries(raw)) {
+            const plId = g.idMap.get(norm(epgId)); if (!plId) continue;
+            if (!schedules[plId]) schedules[plId] = [];
+            const set = existingKeys.get(plId) || new Set();
+            for (const p of list) {
+              if (p.start && set.has(p.start)) continue;
+              schedules[plId].push(p);
+              if (p.start) set.add(p.start);
+            }
+            existingKeys.set(plId, set);
+          }
+        } else {
+          for (const [epgId, list] of Object.entries(raw)) {
+            if (!schedules[epgId]) schedules[epgId] = [];
+            const set = existingKeys.get(epgId) || new Set();
+            for (const p of list) {
+              if (p.start && set.has(p.start)) continue;
+              schedules[epgId].push(p);
+              if (p.start) set.add(p.start);
+            }
+            existingKeys.set(epgId, set);
+          }
+        }
+      } catch {}
+    }
+  }
+  // Sort after backfill
+  for (const id of Object.keys(schedules)) schedules[id].sort((a,b)=>(a.start<b.start?-1:a.start>b.start?1:0));
 }
 
 async function fetchText(url) {
@@ -192,7 +242,7 @@ function formatXmltvWithZone(utcIso, originalXmltv, zoneId, offsetMinutes, shift
 
 // Build export in background and cache to file
 async function prewarmExportJob(params) {
-  const { pastDays, futureDays, playlistUrl, epgUrl } = params;
+  const { pastDays, futureDays, playlistUrl, epgUrl, full = false } = params;
   const d = getDefaults();
   const pl = playlistUrl || d.playlistUrl || null;
   let epg = epgUrl || d.epgUrl || null;
@@ -241,8 +291,9 @@ async function prewarmExportJob(params) {
   const mirrors = await Promise.all(groupArr.map(g => mirrorFetch(g.url)));
   // Signatures
   const sigs = {};
-  mirrors.forEach((m,i)=>{ const st = fs.existsSync(m.path)?fs.statSync(m.path):null; sigs[groupArr[i].url] = { etag: m.etag||null, lastModified: m.lastModified||null, size: st?st.size:null, mtimeMs: st?st.mtimeMs:null }; });
-  const keyObj = { v:1, type:'export-gz', full: !!full, urls:sigs, ids: channelIds.size?Array.from(channelIds).sort():[], maps: channelIds.size?Array.from(channelIds).reduce((a,id)=>{const m=mappings[id]; if(m) a[id]={sourceId:m.sourceId||null, epgChannelId:m.epgChannelId||null, offsetMinutes:Number.isFinite(m.offsetMinutes)?(m.offsetMinutes|0):0, zoneId: m.zoneId || null, shiftMode: (m.shiftMode==='offset'?'offset':'wall')}; return a;},{}):{}, windowFromMs, windowToMs };
+  const hist = {};
+  mirrors.forEach((m,i)=>{ const st = fs.existsSync(m.path)?fs.statSync(m.path):null; const url = groupArr[i].url; sigs[url] = { etag: m.etag||null, lastModified: m.lastModified||null, size: st?st.size:null, mtimeMs: st?st.mtimeMs:null }; const snaps = listSnapshots(url).slice(0, 12).map(s=>s.savedAt); hist[url] = snaps; });
+  const keyObj = { v:1, type:'export-gz', full: !!full, urls:sigs, history: hist, ids: channelIds.size?Array.from(channelIds).sort():[], maps: channelIds.size?Array.from(channelIds).reduce((a,id)=>{const m=mappings[id]; if(m) a[id]={sourceId:m.sourceId||null, epgChannelId:m.epgChannelId||null, offsetMinutes:Number.isFinite(m.offsetMinutes)?(m.offsetMinutes|0):0, zoneId: m.zoneId || null, shiftMode: (m.shiftMode==='offset'?'offset':'wall')}; return a;},{}):{}, windowFromMs, windowToMs };
   const cacheKey = 'EPG_' + sha1hex(stableStringify(keyObj));
   params.key = cacheKey;
   const exportDir = process.cwd() + '/epg-viewer/data/cache/exports';
@@ -274,6 +325,10 @@ async function prewarmExportJob(params) {
     }
   }
   for (const id of Object.keys(schedules)) schedules[id].sort((a,b)=>(a.start<b.start?-1:a.start>b.start?1:0));
+  // Backfill from history if enabled and window includes the past
+  if (d.historyBackfill !== false && !full) {
+    await backfillFromHistory(groupArr, windowFromMs, windowToMs, schedules, mappings);
+  }
 
   // Write gz to disk (same format as /epg.xml.gz)
   if (job) { job.message = 'Writing export'; job.percent = 85; }
@@ -586,18 +641,28 @@ app.get('/api/_diag/headers', async (req, res) => {
 // Settings endpoints to support simplified export URLs without exposing playlist in query
 app.get('/api/settings', (req, res) => {
   const d = getDefaults();
-  res.json({ playlistUrl: d.playlistUrl, epgUrl: d.epgUrl, usePlaylistEpg: d.usePlaylistEpg !== false, pastDays: d.pastDays, futureDays: d.futureDays });
+  res.json({
+    playlistUrl: d.playlistUrl,
+    epgUrl: d.epgUrl,
+    usePlaylistEpg: d.usePlaylistEpg !== false,
+    pastDays: d.pastDays,
+    futureDays: d.futureDays,
+    historyBackfill: d.historyBackfill !== false,
+    historyRetentionDays: d.historyRetentionDays
+  });
 });
 
 app.post('/api/settings', (req, res) => {
   try {
-    const { playlistUrl, epgUrl, usePlaylistEpg, pastDays, futureDays } = req.body || {};
+    const { playlistUrl, epgUrl, usePlaylistEpg, pastDays, futureDays, historyBackfill, historyRetentionDays } = req.body || {};
     const updated = updateDefaults({
       ...(typeof playlistUrl === 'string' && playlistUrl.trim() ? { playlistUrl: playlistUrl.trim() } : {}),
       ...(typeof epgUrl === 'string' && epgUrl.trim() ? { epgUrl: epgUrl.trim() } : {}),
       ...(typeof usePlaylistEpg === 'boolean' ? { usePlaylistEpg } : {}),
       ...(Number.isFinite(pastDays) ? { pastDays: Math.max(0, pastDays|0) } : {}),
-      ...(Number.isFinite(futureDays) ? { futureDays: Math.max(0, futureDays|0) } : {})
+      ...(Number.isFinite(futureDays) ? { futureDays: Math.max(0, futureDays|0) } : {}),
+      ...(typeof historyBackfill === 'boolean' ? { historyBackfill } : {}),
+      ...(Number.isFinite(historyRetentionDays) ? { historyRetentionDays: Math.max(1, historyRetentionDays|0) } : {})
     });
     res.json({ ok: true, settings: updated });
   } catch (e) {
@@ -888,8 +953,9 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
     const groupArr = Array.from(groups.values());
     const mirrors = await Promise.all(groupArr.map(g => mirrorFetch(g.url)));
     const sigs = {};
-    mirrors.forEach((m,i)=>{ const st = fs.existsSync(m.path)?fs.statSync(m.path):null; sigs[groupArr[i].url] = { etag: m.etag||null, lastModified: m.lastModified||null, size: st?st.size:null, mtimeMs: st?st.mtimeMs:null }; });
-    const keyObj = { v:1, type:'export-gz', full: !!isFull, urls:sigs, ids: channelIds.size?Array.from(channelIds).sort():[], maps: channelIds.size?Array.from(channelIds).reduce((a,id)=>{const m=getMappings()[id]; if(m) a[id]={sourceId:m.sourceId||null, epgChannelId:m.epgChannelId||null, offsetMinutes:Number.isFinite(m.offsetMinutes)?(m.offsetMinutes|0):0, zoneId:m.zoneId||null, shiftMode:(m.shiftMode==='offset'?'offset':'wall')}; return a;},{}):{}, windowFromMs, windowToMs };
+    const hist = {};
+    mirrors.forEach((m,i)=>{ const st = fs.existsSync(m.path)?fs.statSync(m.path):null; const url = groupArr[i].url; sigs[url] = { etag: m.etag||null, lastModified: m.lastModified||null, size: st?st.size:null, mtimeMs: st?st.mtimeMs:null }; const snaps = listSnapshots(url).slice(0, 12).map(s=>s.savedAt); hist[url] = snaps; });
+    const keyObj = { v:1, type:'export-gz', full: !!isFull, urls:sigs, history: hist, ids: channelIds.size?Array.from(channelIds).sort():[], maps: channelIds.size?Array.from(channelIds).reduce((a,id)=>{const m=getMappings()[id]; if(m) a[id]={sourceId:m.sourceId||null, epgChannelId:m.epgChannelId||null, offsetMinutes:Number.isFinite(m.offsetMinutes)?(m.offsetMinutes|0):0, zoneId:m.zoneId||null, shiftMode:(m.shiftMode==='offset'?'offset':'wall')}; return a;},{}):{}, windowFromMs, windowToMs };
     const cacheKey = 'EPG_' + sha1hex(stableStringify(keyObj));
     let schedules = {};
     const epgChMeta = new Map();
@@ -916,6 +982,10 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
         }
       }
       for (const id of Object.keys(schedules)) schedules[id].sort((a,b)=>(a.start<b.start?-1:a.start>b.start?1:0));
+      const d = getDefaults();
+      if (d.historyBackfill !== false && !isFull) {
+        await backfillFromHistory(groupArr, windowFromMs, windowToMs, schedules, getMappings());
+      }
       const epgMetaObj = {}; for (const [id, meta] of epgChMeta.entries()) epgMetaObj[id] = meta;
       setCache(cacheKey, { schedules, epgMeta: epgMetaObj }, 10*60*1000);
     }
@@ -1080,8 +1150,9 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
     const groupArr = Array.from(groups.values());
     const mirrors = await Promise.all(groupArr.map(g => mirrorFetch(g.url)));
     const sigs = {};
-    mirrors.forEach((m,i)=>{ const st = fs.existsSync(m.path)?fs.statSync(m.path):null; sigs[groupArr[i].url] = { etag: m.etag||null, lastModified: m.lastModified||null, size: st?st.size:null, mtimeMs: st?st.mtimeMs:null }; });
-    const keyObj = { v:1, type:'export-xml', urls:sigs, ids: channelIds.size?Array.from(channelIds).sort():[], maps: channelIds.size?Array.from(channelIds).reduce((a,id)=>{const m=getMappings()[id]; if(m) a[id]={sourceId:m.sourceId, epgChannelId:m.epgChannelId||null, offsetMinutes:Number.isFinite(m.offsetMinutes)?(m.offsetMinutes|0):0, zoneId:m.zoneId||null, shiftMode:(m.shiftMode==='offset'?'offset':'wall')}; return a;},{}):{}, windowFromMs, windowToMs };
+    const hist = {};
+    mirrors.forEach((m,i)=>{ const st = fs.existsSync(m.path)?fs.statSync(m.path):null; const url = groupArr[i].url; sigs[url] = { etag: m.etag||null, lastModified: m.lastModified||null, size: st?st.size:null, mtimeMs: st?st.mtimeMs:null }; const snaps = listSnapshots(url).slice(0, 12).map(s=>s.savedAt); hist[url] = snaps; });
+    const keyObj = { v:1, type:'export-xml', urls:sigs, history: hist, ids: channelIds.size?Array.from(channelIds).sort():[], maps: channelIds.size?Array.from(channelIds).reduce((a,id)=>{const m=getMappings()[id]; if(m) a[id]={sourceId:m.sourceId, epgChannelId:m.epgChannelId||null, offsetMinutes:Number.isFinite(m.offsetMinutes)?(m.offsetMinutes|0):0, zoneId:m.zoneId||null, shiftMode:(m.shiftMode==='offset'?'offset':'wall')}; return a;},{}):{}, windowFromMs, windowToMs };
     const cacheKey = 'EPG_' + sha1hex(stableStringify(keyObj));
     let schedules = {};
     const epgChMeta = new Map();
@@ -1106,6 +1177,10 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
         }
       }
       for (const id of Object.keys(schedules)) schedules[id].sort((a,b)=>(a.start<b.start?-1:a.start>b.start?1:0));
+      const d = getDefaults();
+      if (d.historyBackfill !== false) {
+        await backfillFromHistory(groupArr, windowFromMs, windowToMs, schedules, getMappings());
+      }
       const epgMetaObj = {}; for (const [id, meta] of epgChMeta.entries()) epgMetaObj[id] = meta;
       setCache(cacheKey, { schedules, epgMeta: epgMetaObj }, 10*60*1000);
     }

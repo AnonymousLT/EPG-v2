@@ -98,6 +98,16 @@
             <div class="form-row">
               <label><input id="fullExport" type="checkbox" /> Full EPG (no day limits)</label>
             </div>
+            <div class="grid-3">
+              <div class="form-row">
+                <label><input id="historyBackfill" type="checkbox" /> Backfill past days from history</label>
+                <div class="hint muted">Uses mirrored snapshots to serve previous days.</div>
+              </div>
+              <div class="form-row">
+                <label for="historyRetentionDays">History retention (days)</label>
+                <input id="historyRetentionDays" type="number" min="1" max="60" value="21" />
+              </div>
+            </div>
             <div class="form-row">
               <label>Prewarm</label>
               <div class="copy-row">

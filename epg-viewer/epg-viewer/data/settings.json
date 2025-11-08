@@ -4,7 +4,9 @@
     "epgUrl": "http://epg.g-cdn.app/xmltv.xml.gz",
     "usePlaylistEpg": true,
     "pastDays": 7,
-    "futureDays": 3
+    "futureDays": 3,
+    "historyBackfill": true,
+    "historyRetentionDays": 8
   },
   "sources": [
     {

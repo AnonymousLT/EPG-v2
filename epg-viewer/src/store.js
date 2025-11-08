@@ -16,7 +16,9 @@ function ensureDirs() {
     epgUrl: null,
     usePlaylistEpg: true,
     pastDays: 7,
-    futureDays: 3
+    futureDays: 3,
+    historyBackfill: true,
+    historyRetentionDays: 21
   },
   sources: [
     // { id, url, enabled: true, priority: 100, lastScanAt: ISO, channelCount: 0 }
