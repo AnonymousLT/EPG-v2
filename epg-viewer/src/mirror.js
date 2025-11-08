@@ -42,8 +42,10 @@ export async function mirrorFetch(url) {
     const isGz = prev.isGz ?? url.endsWith('.gz');
     const file = isGz ? paths.gz : paths.xml;
     if (!fs.existsSync(file)) {
-      // missing file, force re-download
-      return await forceDownload(url, paths, res);
+      // We rotated the previous file to a snapshot; refetch without conditionals
+      const fresh = await fetch(url, { headers: { 'User-Agent': 'epg-viewer/0.1' } });
+      if (!fresh.ok) throw new Error(`Mirror fetch (fresh) failed ${url}: ${fresh.status} ${fresh.statusText}`);
+      return await forceDownload(url, paths, fresh);
     }
     return { path: file, isGz, etag: prev.etag || null, lastModified: prev.lastModified || null, changed: false };
   }
