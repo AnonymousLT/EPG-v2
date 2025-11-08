@@ -109,8 +109,18 @@ async function forceDownload(url, paths, res) {
     try {
       const out = fs.createWriteStream(tmp);
       const r = res.body;
-      const src = r && r.getReader ? Readable.fromWeb(res.body) : res.body; // fetch body is web stream
-      if (src.pipe) src.pipe(out); else out.end(Buffer.from(await res.arrayBuffer()));
+      let src = null;
+      try {
+        if (r && typeof r.getReader === 'function') src = Readable.fromWeb(r);
+        else if (r && typeof r.pipe === 'function') src = r;
+      } catch {}
+      if (src && typeof src.pipe === 'function') {
+        src.pipe(out);
+      } else {
+        // Fallback: read full body and write once
+        const buf = Buffer.from(await res.arrayBuffer());
+        out.end(buf);
+      }
       out.on('finish', resolve);
       out.on('error', reject);
     } catch (e) { reject(e); }

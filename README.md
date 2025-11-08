@@ -145,7 +145,7 @@ epg-viewer/data/
 - cache/schedules/ — per‑channel JSON cache for UI
 - source-cache/ — scanned channel lists per source
 
-You can safely delete the cache/ folders to force a rebuild (mirrors/snapshots are retained).
+You can safely delete the cache/ls folders to force a rebuild (mirrors/snapshots are retained).
 
 
 Tips and troubleshooting
