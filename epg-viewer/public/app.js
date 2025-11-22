@@ -22,6 +22,7 @@ const historyRetentionInput = document.getElementById('historyRetentionDays');
 const autoPrewarmEnabledChk = document.getElementById('autoPrewarmEnabled');
 const autoPrewarmIntervalInput = document.getElementById('autoPrewarmInterval');
 const liveGenerationEnabledChk = document.getElementById('liveGenerationEnabled');
+const lowMemModeChk = document.getElementById('lowMemMode');
 const applySettingsBtn = document.getElementById('applySettings');
 const closeSettingsBtn = document.getElementById('closeSettings');
 const prewarmBtn = document.getElementById('prewarmBtn');
@@ -220,6 +221,7 @@ async function loadDefaultsIntoUI() {
     if (typeof d.autoPrewarmEnabled === 'boolean' && autoPrewarmEnabledChk) autoPrewarmEnabledChk.checked = !!d.autoPrewarmEnabled;
     if (typeof d.autoPrewarmIntervalMinutes === 'number' && autoPrewarmIntervalInput) autoPrewarmIntervalInput.value = d.autoPrewarmIntervalMinutes;
     if (typeof d.liveGenerationEnabled === 'boolean' && liveGenerationEnabledChk) liveGenerationEnabledChk.checked = !!d.liveGenerationEnabled;
+    if (typeof d.lowMemMode === 'boolean' && lowMemModeChk) lowMemModeChk.checked = !!d.lowMemMode;
   } catch {}
   computeExportUrls();
 }
@@ -266,6 +268,7 @@ autoPrewarmIntervalInput && (autoPrewarmIntervalInput.onchange = () => {
   saveDefaults({ autoPrewarmIntervalMinutes: v });
 });
 liveGenerationEnabledChk && (liveGenerationEnabledChk.onchange = () => saveDefaults({ liveGenerationEnabled: !!liveGenerationEnabledChk.checked }));
+lowMemModeChk && (lowMemModeChk.onchange = () => saveDefaults({ lowMemMode: !!lowMemModeChk.checked }));
 copyGzBtn.onclick = () => { navigator.clipboard.writeText(exportGzUrlInput.value).catch(()=>{}); };
 copyXmlBtn.onclick = () => { navigator.clipboard.writeText(exportXmlUrlInput.value).catch(()=>{}); };
 openGzBtn && (openGzBtn.onclick = () => { const u=exportGzUrlInput.value; if (u) window.open(u, '_blank'); });

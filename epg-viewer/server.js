@@ -70,6 +70,22 @@ function pruneOldFiles(dir, days = 10, pattern = /.*/) {
   } catch {}
 }
 
+async function parseGroups(groupArr, mirrors, opts, lowMem = false) {
+  if (!lowMem) {
+    return await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, opts)));
+  }
+  const out = [];
+  for (let i=0; i<groupArr.length; i++) {
+    try {
+      const val = await streamParseXmltv(mirrors[i].path, groupArr[i].allowed || null, opts);
+      out.push({ status: 'fulfilled', value: val });
+    } catch (e) {
+      out.push({ status: 'rejected', reason: e });
+    }
+  }
+  return out;
+}
+
 async function runAutoPrewarmOnce() {
   const d = getDefaults();
   if (d.autoPrewarmEnabled === false) return;
@@ -348,7 +364,7 @@ async function prewarmExportJob(params) {
 
   // Parse concurrently
   if (job) { job.message = 'Parsing sources'; job.percent = 25; }
-  const parsedResults = await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, full ? { noWindow: true } : { windowFromMs, windowToMs })));
+  const parsedResults = await parseGroups(groupArr, mirrors, full ? { noWindow: true } : { windowFromMs, windowToMs }, d.lowMemMode === true);
   if (job) { job.message = 'Merging'; job.percent = 70; }
   // Merge with offsets
   const schedules = {}; const epgChMeta = new Map();
@@ -695,13 +711,14 @@ app.get('/api/settings', (req, res) => {
     historyRetentionDays: d.historyRetentionDays,
     autoPrewarmEnabled: d.autoPrewarmEnabled !== false,
     autoPrewarmIntervalMinutes: d.autoPrewarmIntervalMinutes,
-    liveGenerationEnabled: d.liveGenerationEnabled !== false
+    liveGenerationEnabled: d.liveGenerationEnabled !== false,
+    lowMemMode: d.lowMemMode === true
   });
 });
 
 app.post('/api/settings', (req, res) => {
   try {
-    const { playlistUrl, epgUrl, usePlaylistEpg, pastDays, futureDays, historyBackfill, historyRetentionDays, autoPrewarmEnabled, autoPrewarmIntervalMinutes, liveGenerationEnabled } = req.body || {};
+    const { playlistUrl, epgUrl, usePlaylistEpg, pastDays, futureDays, historyBackfill, historyRetentionDays, autoPrewarmEnabled, autoPrewarmIntervalMinutes, liveGenerationEnabled, lowMemMode } = req.body || {};
     const updated = updateDefaults({
       ...(typeof playlistUrl === 'string' && playlistUrl.trim() ? { playlistUrl: playlistUrl.trim() } : {}),
       ...(typeof epgUrl === 'string' && epgUrl.trim() ? { epgUrl: epgUrl.trim() } : {}),
@@ -712,7 +729,8 @@ app.post('/api/settings', (req, res) => {
       ...(Number.isFinite(historyRetentionDays) ? { historyRetentionDays: Math.max(1, historyRetentionDays|0) } : {}),
       ...(typeof autoPrewarmEnabled === 'boolean' ? { autoPrewarmEnabled } : {}),
       ...(Number.isFinite(autoPrewarmIntervalMinutes) ? { autoPrewarmIntervalMinutes: Math.max(5, autoPrewarmIntervalMinutes|0) } : {}),
-      ...(typeof liveGenerationEnabled === 'boolean' ? { liveGenerationEnabled } : {})
+      ...(typeof liveGenerationEnabled === 'boolean' ? { liveGenerationEnabled } : {}),
+      ...(typeof lowMemMode === 'boolean' ? { lowMemMode } : {})
     });
     res.json({ ok: true, settings: updated });
     refreshAutoPrewarm();
@@ -1016,7 +1034,7 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
       const meta = cached.epgMeta || {};
       for (const id of Object.keys(meta)) epgChMeta.set(id, meta[id]);
     } else {
-  const parsedResults = await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, isFull ? { noWindow: true } : { windowFromMs, windowToMs })));
+    const parsedResults = await parseGroups(groupArr, mirrors, isFull ? { noWindow: true } : { windowFromMs, windowToMs }, d.lowMemMode === true);
       for (let i=0;i<parsedResults.length;i++){
         const g = groupArr[i];
         if (parsedResults[i].status !== 'fulfilled') { continue; }
@@ -1221,7 +1239,7 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
       if (d.liveGenerationEnabled === false) {
         return res.status(503).json({ error: 'Live export generation disabled. Enable live generation or wait for auto-prewarm.' });
       }
-      const parsedResults = await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, { windowFromMs, windowToMs })));
+      const parsedResults = await parseGroups(groupArr, mirrors, { windowFromMs, windowToMs }, d.lowMemMode === true);
       for (let i=0;i<parsedResults.length;i++){
         const g = groupArr[i];
         if (parsedResults[i].status !== 'fulfilled') { continue; }

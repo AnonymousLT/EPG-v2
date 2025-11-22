@@ -21,7 +21,8 @@ function ensureDirs() {
     historyRetentionDays: 21,
     autoPrewarmEnabled: true,
     autoPrewarmIntervalMinutes: 360,
-    liveGenerationEnabled: true
+    liveGenerationEnabled: true,
+    lowMemMode: false
   },
   sources: [
     // { id, url, enabled: true, priority: 100, lastScanAt: ISO, channelCount: 0 }
