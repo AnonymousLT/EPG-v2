@@ -34,6 +34,9 @@ const epgCache = new Map(); // key: epgUrl -> { at: Date.now(), text, parsed }
 const prewarmJobs = new Map(); // key -> { status, percent, message, startedAt, finishedAt, exportUrl }
 let autoPrewarmTimer = null;
 
+const RETAIN_DAYS_EXPORTS = 10;
+const RETAIN_DAYS_SCHEDULES = 10;
+
 // Load persisted settings
 loadSettings();
 
@@ -50,6 +53,21 @@ function normalizeXmltvOffsetZero(xmltv) {
   const m = /^(\d{14})(?:\s*(?:[+\-]\d{4}|Z))?$/.exec(xmltv);
   if (m) return `${m[1]} +0000`;
   return xmltv;
+}
+
+function pruneOldFiles(dir, days = 10, pattern = /.*/) {
+  try {
+    const cutoff = Date.now() - Math.max(1, days|0) * 24 * 60 * 60 * 1000;
+    const files = fs.readdirSync(dir);
+    for (const f of files) {
+      if (!pattern.test(f)) continue;
+      const full = path.join(dir, f);
+      try {
+        const st = fs.statSync(full);
+        if (st.mtimeMs < cutoff) fs.unlinkSync(full);
+      } catch { /* ignore */ }
+    }
+  } catch {}
 }
 
 async function runAutoPrewarmOnce() {
@@ -321,6 +339,7 @@ async function prewarmExportJob(params) {
   params.key = cacheKey;
   const exportDir = process.cwd() + '/epg-viewer/data/cache/exports';
   try { fs.mkdirSync(exportDir, { recursive: true }); } catch {}
+  pruneOldFiles(exportDir, RETAIN_DAYS_EXPORTS, /\.xml\.gz$/);
   const exportPath = exportDir + `/${cacheKey}.xml.gz`;
   if (fs.existsSync(exportPath)) {
     if (job) { job.message = 'Ready (cached)'; job.percent = 100; job.status = 'done'; job.exportUrl = `/epg.xml.gz?pastDays=${pastDays}&futureDays=${futureDays}`; job.finishedAt = new Date().toISOString(); }
@@ -1198,6 +1217,7 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
       const meta = cached.epgMeta || {};
       for (const id of Object.keys(meta)) epgChMeta.set(id, meta[id]);
     } else {
+      pruneOldFiles(process.cwd() + '/epg-viewer/data/cache/exports', RETAIN_DAYS_EXPORTS, /\.xml$/);
       if (d.liveGenerationEnabled === false) {
         return res.status(503).json({ error: 'Live export generation disabled. Enable live generation or wait for auto-prewarm.' });
       }
