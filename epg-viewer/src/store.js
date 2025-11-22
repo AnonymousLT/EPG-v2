@@ -18,7 +18,10 @@ function ensureDirs() {
     pastDays: 7,
     futureDays: 3,
     historyBackfill: true,
-    historyRetentionDays: 21
+    historyRetentionDays: 21,
+    autoPrewarmEnabled: true,
+    autoPrewarmIntervalMinutes: 360,
+    liveGenerationEnabled: true
   },
   sources: [
     // { id, url, enabled: true, priority: 100, lastScanAt: ISO, channelCount: 0 }

@@ -108,6 +108,20 @@
                 <input id="historyRetentionDays" type="number" min="1" max="60" value="21" />
               </div>
             </div>
+            <div class="grid-3">
+              <div class="form-row">
+                <label><input id="autoPrewarmEnabled" type="checkbox" /> Auto-prewarm exports</label>
+                <div class="hint muted">Builds cached exports on a schedule.</div>
+              </div>
+              <div class="form-row">
+                <label for="autoPrewarmInterval">Prewarm interval (minutes)</label>
+                <input id="autoPrewarmInterval" type="number" min="5" max="1440" value="360" />
+              </div>
+              <div class="form-row">
+                <label><input id="liveGenerationEnabled" type="checkbox" /> Allow live generation when cache missing</label>
+                <div class="hint muted">If off, exports only serve cached files.</div>
+              </div>
+            </div>
             <div class="form-row">
               <label>Prewarm</label>
               <div class="copy-row">

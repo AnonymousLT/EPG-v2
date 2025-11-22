@@ -32,6 +32,7 @@ const playlistCache = new Map(); // key: playlistUrl -> { at: Date.now(), text, 
 const epgCache = new Map(); // key: epgUrl -> { at: Date.now(), text, parsed }
 // Background export prewarm jobs
 const prewarmJobs = new Map(); // key -> { status, percent, message, startedAt, finishedAt, exportUrl }
+let autoPrewarmTimer = null;
 
 // Load persisted settings
 loadSettings();
@@ -49,6 +50,28 @@ function normalizeXmltvOffsetZero(xmltv) {
   const m = /^(\d{14})(?:\s*(?:[+\-]\d{4}|Z))?$/.exec(xmltv);
   if (m) return `${m[1]} +0000`;
   return xmltv;
+}
+
+async function runAutoPrewarmOnce() {
+  const d = getDefaults();
+  if (d.autoPrewarmEnabled === false) return;
+  try {
+    await prewarmExportJob({ pastDays: d.pastDays, futureDays: d.futureDays, playlistUrl: d.playlistUrl, epgUrl: d.epgUrl, full: false, key: 'AUTO_WIN' });
+    await prewarmExportJob({ pastDays: d.pastDays, futureDays: d.futureDays, playlistUrl: d.playlistUrl, epgUrl: d.epgUrl, full: true, key: 'AUTO_FULL' });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Auto-prewarm failed:', e.message || e);
+  }
+}
+
+function refreshAutoPrewarm() {
+  if (autoPrewarmTimer) { clearInterval(autoPrewarmTimer); autoPrewarmTimer = null; }
+  const d = getDefaults();
+  if (d.autoPrewarmEnabled === false) return;
+  const minutes = Math.max(5, Number(d.autoPrewarmIntervalMinutes) || 360);
+  const ms = minutes * 60 * 1000;
+  autoPrewarmTimer = setInterval(runAutoPrewarmOnce, ms);
+  runAutoPrewarmOnce();
 }
 
 // Merge historical programmes from source mirror snapshots to backfill past days
@@ -650,13 +673,16 @@ app.get('/api/settings', (req, res) => {
     pastDays: d.pastDays,
     futureDays: d.futureDays,
     historyBackfill: d.historyBackfill !== false,
-    historyRetentionDays: d.historyRetentionDays
+    historyRetentionDays: d.historyRetentionDays,
+    autoPrewarmEnabled: d.autoPrewarmEnabled !== false,
+    autoPrewarmIntervalMinutes: d.autoPrewarmIntervalMinutes,
+    liveGenerationEnabled: d.liveGenerationEnabled !== false
   });
 });
 
 app.post('/api/settings', (req, res) => {
   try {
-    const { playlistUrl, epgUrl, usePlaylistEpg, pastDays, futureDays, historyBackfill, historyRetentionDays } = req.body || {};
+    const { playlistUrl, epgUrl, usePlaylistEpg, pastDays, futureDays, historyBackfill, historyRetentionDays, autoPrewarmEnabled, autoPrewarmIntervalMinutes, liveGenerationEnabled } = req.body || {};
     const updated = updateDefaults({
       ...(typeof playlistUrl === 'string' && playlistUrl.trim() ? { playlistUrl: playlistUrl.trim() } : {}),
       ...(typeof epgUrl === 'string' && epgUrl.trim() ? { epgUrl: epgUrl.trim() } : {}),
@@ -664,9 +690,13 @@ app.post('/api/settings', (req, res) => {
       ...(Number.isFinite(pastDays) ? { pastDays: Math.max(0, pastDays|0) } : {}),
       ...(Number.isFinite(futureDays) ? { futureDays: Math.max(0, futureDays|0) } : {}),
       ...(typeof historyBackfill === 'boolean' ? { historyBackfill } : {}),
-      ...(Number.isFinite(historyRetentionDays) ? { historyRetentionDays: Math.max(1, historyRetentionDays|0) } : {})
+      ...(Number.isFinite(historyRetentionDays) ? { historyRetentionDays: Math.max(1, historyRetentionDays|0) } : {}),
+      ...(typeof autoPrewarmEnabled === 'boolean' ? { autoPrewarmEnabled } : {}),
+      ...(Number.isFinite(autoPrewarmIntervalMinutes) ? { autoPrewarmIntervalMinutes: Math.max(5, autoPrewarmIntervalMinutes|0) } : {}),
+      ...(typeof liveGenerationEnabled === 'boolean' ? { liveGenerationEnabled } : {})
     });
     res.json({ ok: true, settings: updated });
+    refreshAutoPrewarm();
   } catch (e) {
     res.status(400).json({ error: 'Invalid settings payload' });
   }
@@ -1020,6 +1050,9 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
       rs.pipe(res);
       return;
     }
+    if (d.liveGenerationEnabled === false) {
+      return res.status(503).json({ error: 'Live export generation disabled. Enable live generation or wait for auto-prewarm.' });
+    }
     const { PassThrough } = await import('node:stream');
     const tee = new PassThrough();
     gzip.pipe(tee);
@@ -1165,6 +1198,9 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
       const meta = cached.epgMeta || {};
       for (const id of Object.keys(meta)) epgChMeta.set(id, meta[id]);
     } else {
+      if (d.liveGenerationEnabled === false) {
+        return res.status(503).json({ error: 'Live export generation disabled. Enable live generation or wait for auto-prewarm.' });
+      }
       const parsedResults = await Promise.allSettled(groupArr.map((g,i)=> streamParseXmltv(mirrors[i].path, g.allowed || null, { windowFromMs, windowToMs })));
       for (let i=0;i<parsedResults.length;i++){
         const g = groupArr[i];
@@ -1303,3 +1339,6 @@ app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`EPG Viewer listening on http://localhost:${PORT}`);
 });
+
+// Start auto-prewarm scheduler
+refreshAutoPrewarm();

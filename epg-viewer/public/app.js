@@ -19,6 +19,9 @@ const openXmlBtn = document.getElementById('openXml');
 const fullExportChk = document.getElementById('fullExport');
 const historyBackfillChk = document.getElementById('historyBackfill');
 const historyRetentionInput = document.getElementById('historyRetentionDays');
+const autoPrewarmEnabledChk = document.getElementById('autoPrewarmEnabled');
+const autoPrewarmIntervalInput = document.getElementById('autoPrewarmInterval');
+const liveGenerationEnabledChk = document.getElementById('liveGenerationEnabled');
 const applySettingsBtn = document.getElementById('applySettings');
 const closeSettingsBtn = document.getElementById('closeSettings');
 const prewarmBtn = document.getElementById('prewarmBtn');
@@ -214,6 +217,9 @@ async function loadDefaultsIntoUI() {
     if (typeof d.futureDays === 'number') futureDaysInput.value = d.futureDays;
     if (typeof d.historyBackfill === 'boolean' && historyBackfillChk) historyBackfillChk.checked = !!d.historyBackfill;
     if (typeof d.historyRetentionDays === 'number' && historyRetentionInput) historyRetentionInput.value = d.historyRetentionDays;
+    if (typeof d.autoPrewarmEnabled === 'boolean' && autoPrewarmEnabledChk) autoPrewarmEnabledChk.checked = !!d.autoPrewarmEnabled;
+    if (typeof d.autoPrewarmIntervalMinutes === 'number' && autoPrewarmIntervalInput) autoPrewarmIntervalInput.value = d.autoPrewarmIntervalMinutes;
+    if (typeof d.liveGenerationEnabled === 'boolean' && liveGenerationEnabledChk) liveGenerationEnabledChk.checked = !!d.liveGenerationEnabled;
   } catch {}
   computeExportUrls();
 }
@@ -254,6 +260,12 @@ historyRetentionInput && (historyRetentionInput.onchange = () => {
   const v = parseInt(historyRetentionInput.value || '21', 10) || 21;
   saveDefaults({ historyRetentionDays: v });
 });
+autoPrewarmEnabledChk && (autoPrewarmEnabledChk.onchange = () => saveDefaults({ autoPrewarmEnabled: !!autoPrewarmEnabledChk.checked }));
+autoPrewarmIntervalInput && (autoPrewarmIntervalInput.onchange = () => {
+  const v = parseInt(autoPrewarmIntervalInput.value || '360', 10) || 360;
+  saveDefaults({ autoPrewarmIntervalMinutes: v });
+});
+liveGenerationEnabledChk && (liveGenerationEnabledChk.onchange = () => saveDefaults({ liveGenerationEnabled: !!liveGenerationEnabledChk.checked }));
 copyGzBtn.onclick = () => { navigator.clipboard.writeText(exportGzUrlInput.value).catch(()=>{}); };
 copyXmlBtn.onclick = () => { navigator.clipboard.writeText(exportXmlUrlInput.value).catch(()=>{}); };
 openGzBtn && (openGzBtn.onclick = () => { const u=exportGzUrlInput.value; if (u) window.open(u, '_blank'); });
