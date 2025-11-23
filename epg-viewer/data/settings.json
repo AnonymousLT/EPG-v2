@@ -1,0 +1,17 @@
+{
+  "defaults": {
+    "playlistUrl": "http://248on.com/x/12aba339.m3u8",
+    "epgUrl": null,
+    "usePlaylistEpg": true,
+    "pastDays": 7,
+    "futureDays": 3,
+    "historyBackfill": true,
+    "historyRetentionDays": 21,
+    "autoPrewarmEnabled": true,
+    "autoPrewarmIntervalMinutes": 360,
+    "liveGenerationEnabled": true,
+    "lowMemMode": false
+  },
+  "sources": [],
+  "mappings": {}
+}

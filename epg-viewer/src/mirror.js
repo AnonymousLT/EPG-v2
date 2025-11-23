@@ -56,7 +56,14 @@ export async function mirrorFetch(url) {
     }
     return { path: file, isGz, etag: prev.etag || null, lastModified: prev.lastModified || null, changed: false };
   }
-  if (!res.ok) throw new Error(`Mirror fetch failed ${url}: ${res.status} ${res.statusText}`);
+  if (!res.ok) {
+    const existing = prev.isGz ? paths.gz : paths.xml;
+    if (fs.existsSync(existing)) {
+      // Use last known good copy instead of failing the whole job
+      return { path: existing, isGz: prev.isGz ?? existing.endsWith('.gz'), etag: prev.etag || null, lastModified: prev.lastModified || null, changed: false };
+    }
+    throw new Error(`Mirror fetch failed ${url}: ${res.status} ${res.statusText}`);
+  }
   return await forceDownload(url, paths, res);
 }
 

@@ -10,7 +10,7 @@
     "autoPrewarmEnabled": true,
     "autoPrewarmIntervalMinutes": 360,
     "liveGenerationEnabled": true,
-    "lowMemMode": false
+    "lowMemMode": true
   },
   "sources": [
     {

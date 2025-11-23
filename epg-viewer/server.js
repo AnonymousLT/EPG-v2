@@ -1,6 +1,7 @@
 import express from 'express';
 import compression from 'compression';
 import fs from 'node:fs';
+import path from 'node:path';
 import zlib from 'zlib';
 import { parsePlaylist } from './src/parseM3U.js';
 import { findEpgUrlInHeader, parseXmlTv, xmltvTimeToIso, isoToXmltvTime } from './src/xmltv.js';
@@ -53,6 +54,11 @@ function normalizeXmltvOffsetZero(xmltv) {
   const m = /^(\d{14})(?:\s*(?:[+\-]\d{4}|Z))?$/.exec(xmltv);
   if (m) return `${m[1]} +0000`;
   return xmltv;
+}
+
+function logExportAccess(kind, details = {}) {
+  // eslint-disable-next-line no-console
+  console.log(`[export/${kind}]`, details);
 }
 
 function pruneOldFiles(dir, days = 10, pattern = /.*/) {
@@ -320,13 +326,6 @@ async function prewarmExportJob(params) {
       const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || null;
       epg = d.usePlaylistEpg === false ? null : fromPl;
     }
-    console.log('[epg-detect] prewarmExportJob', {
-      playlistUrl: pl,
-      headerEpg: epg,
-      defaultsEpg: d.epgUrl,
-      usePlaylistEpg: d.usePlaylistEpg,
-      epgFinal: epg
-    });
     parsed.channels.forEach(c => { if (c.id) { channelIds.add(c.id); channelMeta.set(c.id, { name: c.name, logo: c.logo || null }); }});
   }
   const mappings = getMappings();
@@ -468,14 +467,6 @@ app.get('/api/channels', async (req, res) => {
     }
 
     let epgUrl = findEpgUrlInHeader(parsed.headerAttrs) || null;
-    // Debug: show detected epgUrl path
-    console.log('[epg-detect]/api/channels', {
-      playlistUrl,
-      headerEpg: findEpgUrlInHeader(parsed.headerAttrs),
-      defaultsEpg: defaults.epgUrl,
-      defaultsUsePlaylist: defaults.usePlaylistEpg,
-      epgFinal: epgUrl
-    });
     if (defaults.usePlaylistEpg === false) epgUrl = null;
 
     res.json({
@@ -1057,7 +1048,7 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
       const meta = cached.epgMeta || {};
       for (const id of Object.keys(meta)) epgChMeta.set(id, meta[id]);
     } else {
-    const parsedResults = await parseGroups(groupArr, mirrors, isFull ? { noWindow: true } : { windowFromMs, windowToMs }, d.lowMemMode === true);
+      const parsedResults = await parseGroups(groupArr, mirrors, isFull ? { noWindow: true } : { windowFromMs, windowToMs }, d.lowMemMode === true);
       for (let i=0;i<parsedResults.length;i++){
         const g = groupArr[i];
         if (parsedResults[i].status !== 'fulfilled') { continue; }
@@ -1075,7 +1066,6 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
         }
       }
       for (const id of Object.keys(schedules)) schedules[id].sort((a,b)=>(a.start<b.start?-1:a.start>b.start?1:0));
-      const d = getDefaults();
       if (d.historyBackfill !== false && !isFull) {
         await backfillFromHistory(groupArr, windowFromMs, windowToMs, schedules, getMappings());
       }
@@ -1102,8 +1092,10 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
     try { fs.mkdirSync(exportDir, { recursive: true }); } catch {}
     const exportKey = cacheKey; // reuse key signature
     const exportPath = exportDir + `/${exportKey}.xml.gz`;
-    const existingGood = fs.existsSync(exportPath) && (() => { try { const st = fs.statSync(exportPath); return st.size > 100; } catch { return false; }})()
+    const st = fs.existsSync(exportPath) ? (() => { try { return fs.statSync(exportPath); } catch { return null; }})() : null;
+    const existingGood = !!(st && st.size > 100);
     if (existingGood) {
+      res.once('finish', () => logExportAccess('gz', { cacheKey: exportKey, fromCache: true, path: exportPath, size: st?.size, pastDays, futureDays, full: isFull }));
       // Fast path: stream file
       const rs = fs.createReadStream(exportPath);
       rs.on('error', () => res.status(500).end());
@@ -1121,6 +1113,12 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
     try { if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath); } catch {}
     const ws = fs.createWriteStream(tmpPath);
     tee.pipe(ws);
+
+    res.once('finish', () => {
+      let sz = null;
+      try { const st2 = fs.statSync(exportPath); sz = st2.size; } catch {}
+      logExportAccess('gz', { cacheKey: exportKey, fromCache: false, path: exportPath, size: sz, pastDays, futureDays, full: isFull });
+    });
 
     // XML helpers
     const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1278,7 +1276,6 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
         }
       }
       for (const id of Object.keys(schedules)) schedules[id].sort((a,b)=>(a.start<b.start?-1:a.start>b.start?1:0));
-      const d = getDefaults();
       if (d.historyBackfill !== false) {
         await backfillFromHistory(groupArr, windowFromMs, windowToMs, schedules, getMappings());
       }
@@ -1295,6 +1292,19 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
     // Headers
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache');
+    const exportDir = process.cwd() + '/epg-viewer/data/cache/exports';
+    try { fs.mkdirSync(exportDir, { recursive: true }); } catch {}
+    const exportPath = exportDir + `/${cacheKey}.xml`;
+    const st = fs.existsSync(exportPath) ? (() => { try { return fs.statSync(exportPath); } catch { return null; }})() : null;
+    const existingGood = !!(st && st.size > 100);
+    if (existingGood) {
+      res.once('finish', () => logExportAccess('xml', { cacheKey, fromCache: true, path: exportPath, size: st?.size, pastDays, futureDays }));
+      const rs = fs.createReadStream(exportPath);
+      rs.on('error', () => res.status(500).end());
+      rs.pipe(res);
+      return;
+    }
+    pruneOldFiles(exportDir, RETAIN_DAYS_EXPORTS, /\.xml$/);
 
     // XML helpers
     const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1341,6 +1351,11 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
 
     write('</tv>\n');
     res.end();
+    res.once('finish', () => {
+      let sz = null;
+      try { const st2 = fs.statSync(exportPath); sz = st2.size; } catch {}
+      logExportAccess('xml', { cacheKey, fromCache: false, path: exportPath, size: sz, pastDays, futureDays });
+    });
   } catch (err) {
     if (!res.headersSent) res.status(500).json({ error: err.message });
     else try { res.end(); } catch {}
