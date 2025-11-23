@@ -33,17 +33,24 @@ export async function mirrorFetch(url) {
   const paths = mirrorPaths(url);
   let prev = {};
   try { prev = JSON.parse(fs.readFileSync(paths.meta, 'utf8')); } catch {}
-  const headers = { 'User-Agent': 'epg-viewer/0.1' };
+  const headers = { 'User-Agent': 'Mozilla/5.0 (epg-viewer/0.1)' };
   if (prev.etag) headers['If-None-Match'] = prev.etag;
   if (prev.lastModified) headers['If-Modified-Since'] = prev.lastModified;
-  const res = await fetch(url, { headers });
+  let res = await fetch(url, { headers });
+  // Retry on 5xx with a fresh, unconditional fetch
+  if (!res.ok && res.status >= 500) {
+    try { res.body?.cancel?.(); } catch {}
+    await new Promise(r => setTimeout(r, 500));
+    res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (epg-viewer/0.1)' } });
+  }
+
   if (res.status === 304) {
     // unchanged
     const isGz = prev.isGz ?? url.endsWith('.gz');
     const file = isGz ? paths.gz : paths.xml;
     if (!fs.existsSync(file)) {
       // We rotated the previous file to a snapshot; refetch without conditionals
-      const fresh = await fetch(url, { headers: { 'User-Agent': 'epg-viewer/0.1' } });
+      const fresh = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (epg-viewer/0.1)' } });
       if (!fresh.ok) throw new Error(`Mirror fetch (fresh) failed ${url}: ${fresh.status} ${fresh.statusText}`);
       return await forceDownload(url, paths, fresh);
     }
