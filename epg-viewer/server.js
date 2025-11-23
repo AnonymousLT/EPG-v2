@@ -317,7 +317,7 @@ async function prewarmExportJob(params) {
     if (cache) { playlistText = cache.text; parsed = cache.parsed; }
     else { playlistText = await fetchText(pl); parsed = parsePlaylist(playlistText); playlistCache.set(pl, { at: Date.now(), text: playlistText, parsed }); }
     if (epg == null) {
-      const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || findEpgUrlInHeader(parsed.guessedHeaderAttrs) || null;
+      const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || null;
       epg = d.usePlaylistEpg === false ? null : fromPl;
     }
     parsed.channels.forEach(c => { if (c.id) { channelIds.add(c.id); channelMeta.set(c.id, { name: c.name, logo: c.logo || null }); }});
@@ -460,7 +460,7 @@ app.get('/api/channels', async (req, res) => {
       playlistCache.set(playlistUrl, { at: Date.now(), text: playlistText, parsed });
     }
 
-    let epgUrl = findEpgUrlInHeader(parsed.headerAttrs) || findEpgUrlInHeader(parsed.guessedHeaderAttrs) || null;
+    let epgUrl = findEpgUrlInHeader(parsed.headerAttrs) || null;
     if (defaults.usePlaylistEpg === false) epgUrl = null;
 
     res.json({
@@ -509,7 +509,7 @@ app.get('/api/epg', async (req, res) => {
         playlistCache.set(playlistUrl, { at: Date.now(), text: playlistText, parsed });
       }
       if (epgUrl == null) {
-        const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || findEpgUrlInHeader(parsed.guessedHeaderAttrs) || null;
+        const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || null;
         epgUrl = defaults.usePlaylistEpg === false ? null : fromPl;
       }
       parsed.channels.forEach(c => {
@@ -972,7 +972,7 @@ app.get(['/api/export/epg.xml.gz', '/epg.xml.gz'], async (req, res) => {
         playlistCache.set(playlistUrl, { at: Date.now(), text: playlistText, parsed });
       }
       if (epgUrl == null) {
-        const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || findEpgUrlInHeader(parsed.guessedHeaderAttrs) || null;
+        const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || null;
         epgUrl = d.usePlaylistEpg === false ? null : fromPl;
       }
       parsed.channels.forEach(c => {
@@ -1181,7 +1181,7 @@ app.get(['/api/export/epg.xml', '/epg.xml'], async (req, res) => {
         playlistCache.set(playlistUrl, { at: Date.now(), text: playlistText, parsed });
       }
       if (epgUrl == null) {
-        const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || findEpgUrlInHeader(parsed.guessedHeaderAttrs) || null;
+        const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || null;
         epgUrl = d.usePlaylistEpg === false ? null : fromPl;
       }
       parsed.channels.forEach(c => {

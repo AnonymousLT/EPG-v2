@@ -28,18 +28,7 @@ export function parsePlaylist(text) {
     break;
   }
 
-  // guess header attrs anywhere in the text for url-tvg variants
   const guessedHeaderAttrs = {};
-  const guesses = [
-    /(?:url-tvg|x-tvg-url|tvg-url)\s*=\s*"([^"]+)"/i
-  ];
-  for (const re of guesses) {
-    const m = text.match(re);
-    if (m && m[1]) {
-      if (!guessedHeaderAttrs['url-tvg']) guessedHeaderAttrs['url-tvg'] = m[1];
-      break;
-    }
-  }
 
   let pending = null; // { id, name, group, logo }
   let pendingGrp = null;
