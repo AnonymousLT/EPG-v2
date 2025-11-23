@@ -320,6 +320,13 @@ async function prewarmExportJob(params) {
       const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || null;
       epg = d.usePlaylistEpg === false ? null : fromPl;
     }
+    console.log('[epg-detect] prewarmExportJob', {
+      playlistUrl: pl,
+      headerEpg: epg,
+      defaultsEpg: d.epgUrl,
+      usePlaylistEpg: d.usePlaylistEpg,
+      epgFinal: epg
+    });
     parsed.channels.forEach(c => { if (c.id) { channelIds.add(c.id); channelMeta.set(c.id, { name: c.name, logo: c.logo || null }); }});
   }
   const mappings = getMappings();
@@ -461,6 +468,14 @@ app.get('/api/channels', async (req, res) => {
     }
 
     let epgUrl = findEpgUrlInHeader(parsed.headerAttrs) || null;
+    // Debug: show detected epgUrl path
+    console.log('[epg-detect]/api/channels', {
+      playlistUrl,
+      headerEpg: findEpgUrlInHeader(parsed.headerAttrs),
+      defaultsEpg: defaults.epgUrl,
+      defaultsUsePlaylist: defaults.usePlaylistEpg,
+      epgFinal: epgUrl
+    });
     if (defaults.usePlaylistEpg === false) epgUrl = null;
 
     res.json({
@@ -510,6 +525,14 @@ app.get('/api/epg', async (req, res) => {
       }
       if (epgUrl == null) {
         const fromPl = findEpgUrlInHeader(parsed.headerAttrs) || null;
+        console.log('[epg-detect]/api/epg', {
+          playlistUrl,
+          headerEpg: fromPl,
+          defaultsEpg: defaults.epgUrl,
+          defaultsUsePlaylist: defaults.usePlaylistEpg,
+          epgBefore: epgUrl,
+          epgFinal: defaults.usePlaylistEpg === false ? null : fromPl
+        });
         epgUrl = defaults.usePlaylistEpg === false ? null : fromPl;
       }
       parsed.channels.forEach(c => {
