@@ -6,10 +6,6 @@ export function findEpgUrlInHeader(attrs = {}) {
   for (const k of byPriority) {
     if (attrs[k]) return attrs[k];
   }
-  for (const k of keys) {
-    const v = attrs[k];
-    if (typeof v === 'string' && /^https?:\/\//i.test(v) && v.toLowerCase().includes('xml')) return v;
-  }
   return null;
 }
 

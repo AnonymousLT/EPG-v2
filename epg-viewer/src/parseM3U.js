@@ -31,8 +31,7 @@ export function parsePlaylist(text) {
   // guess header attrs anywhere in the text for url-tvg variants
   const guessedHeaderAttrs = {};
   const guesses = [
-    /(?:url-tvg|x-tvg-url|tvg-url)\s*=\s*"([^"]+)"/i,
-    /(https?:\/\/[^\s"']+\.xml(?:\.gz)?)/i
+    /(?:url-tvg|x-tvg-url|tvg-url)\s*=\s*"([^"]+)"/i
   ];
   for (const re of guesses) {
     const m = text.match(re);
@@ -79,4 +78,3 @@ export function parsePlaylist(text) {
 
   return { headerAttrs, guessedHeaderAttrs, channels };
 }
-
